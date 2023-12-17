@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 #Генератор занимательных идей о киноиндустрии
 
@@ -24,11 +25,16 @@ df["Actor-Director"] = df["Director"].apply(director_to_actor)
 
 print(df[df["Actor-Director"] == 0]["Metascore"].mean())
 print(df[df["Actor-Director"] == 1]["Metascore"].mean())
+
 print(df[df["Actor-Director"] == 1]["Metascore"].mean() - 
       df[df["Actor-Director"] == 0]["Metascore"].mean())
 
-print(df[df["Actor-Director"] == 0]["Metascore"].min())
-print(df[df["Actor-Director"] == 1]["Metascore"].min())
+df["Actor-Director"].value_counts().plot(kind="pie")
+plt.show()
+
+temp = df.groupby(by="Actor-Director")["Metascore"].mean()
+temp.plot(kind="bar")
+plt.show()
 
 #У фильма с самым большим метражом рейтинг выше среднего значения. (Да, на 0.8768)
 print(df[df["Runtime (Minutes)"] == df["Runtime (Minutes)"].max()]["Rating"])
@@ -39,8 +45,12 @@ print(df[df["Runtime (Minutes)"] > df["Runtime (Minutes)"].mean()]["Rating"].mea
       df[df["Runtime (Minutes)"] < df["Runtime (Minutes)"].mean()]["Rating"].mean())
 
 #У старых фильмов голосов больше, чем у новых. (Нет, среднее значение у старых меньше на ~147724)
-print(df[df["Year"] < df["Year"].mean()]["Votes"].mean() - 
-      df[df["Year"] > df["Year"].mean()]["Votes"].mean())
+
+#У новых фильмов голосов больше, чем у старых.
+def check_year(value):
+    pass
+
+df["Year Status"] = df["Year"].apply()
 
 #У старых фильмов выше доход, чем у новых (Да)
 df["Revenue (Millions)"].fillna(df["Revenue (Millions)"].mean(), inplace=True)
