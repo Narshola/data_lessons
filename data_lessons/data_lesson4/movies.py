@@ -16,18 +16,20 @@ def director_to_actor(value):
     global i
     if value in df["Actors"].iloc[i]:
         i += 1
-        return 1
+        return "Actor-Director"
     i += 1
-    return 0
+    return "Without Actor-Director"
 
 df["Actors"] = df["Actors"].apply(lambda x: x.split(','))
 df["Actor-Director"] = df["Director"].apply(director_to_actor)
 
-print(df[df["Actor-Director"] == 0]["Metascore"].mean())
-print(df[df["Actor-Director"] == 1]["Metascore"].mean())
+actor_director = df[df["Actor-Director"] == "Actor-Director"]["Metascore"].mean()
+without_actor_director = df[df["Actor-Director"] == "Wirgout Actor-Director"]["Metascore"].mean()
 
-print(df[df["Actor-Director"] == 1]["Metascore"].mean() - 
-      df[df["Actor-Director"] == 0]["Metascore"].mean())
+print(actor_director)
+print(without_actor_director)
+
+print(actor_director - without_actor_director)
 
 df["Actor-Director"].value_counts().plot(kind="pie")
 plt.show()
@@ -36,24 +38,48 @@ temp = df.groupby(by="Actor-Director")["Metascore"].mean()
 temp.plot(kind="bar")
 plt.show()
 
-#У фильма с самым большим метражом рейтинг выше среднего значения. (Да, на 0.8768)
-print(df[df["Runtime (Minutes)"] == df["Runtime (Minutes)"].max()]["Rating"])
-print(df[df["Runtime (Minutes)"] == df["Runtime (Minutes)"].max()]["Rating"]-df["Rating"].mean())
+temp = df.pivot_table(columns="Actor-Director",
+                      values="Metascore",
+                      aggfunc="mean")
+print(temp)
+
+temp.plot(kind="barh", figsize=(8, 5))
+plt.show()
 
 #У фильмов с большим метражом рейтинг выше, чем у фильмов с меньшим метражом. (Да, на 0.6)
-print(df[df["Runtime (Minutes)"] > df["Runtime (Minutes)"].mean()]["Rating"].mean() - 
-      df[df["Runtime (Minutes)"] < df["Runtime (Minutes)"].mean()]["Rating"].mean())
+def runtime_status(value):
+    if value < df["Runtime (Minutes)"].mean():
+        return "Less Runtime"
+    return "More Runtime"
 
-#У старых фильмов голосов больше, чем у новых. (Нет, среднее значение у старых меньше на ~147724)
+df["Runtime Status"] = df["Runtime (Minutes)"].apply(runtime_status)
+temp = df.pivot_table(columns="Runtime Status",
+                      values="Rating",
+                      aggfunc="mean")
+temp.plot(kind="barh")
+plt.show()
 
-#У новых фильмов голосов больше, чем у старых.
+#У старых фильмов голосов больше, чем у новых.
 def check_year(value):
-    pass
+    if value < df["Year"].mean():
+        return "Old"
+    return "New"
 
-df["Year Status"] = df["Year"].apply()
+df["Year Status"] = df["Year"].apply(check_year)
+temp = df.pivot_table(columns="Year Status",
+                      values="Votes",
+                      aggfunc="mean")
+print(temp)
+
+temp.plot(kind="barh")
+plt.show()
 
 #У старых фильмов выше доход, чем у новых (Да)
 df["Revenue (Millions)"].fillna(df["Revenue (Millions)"].mean(), inplace=True)
 
-print(df[df["Year"] < df["Year"].mean()]["Revenue (Millions)"].mean())
-print(df[df["Year"] > df["Year"].mean()]["Revenue (Millions)"].mean())
+temp = df.pivot_table(columns="Year Status",
+                      values="Revenue (Millions)",
+                      aggfunc="mean")
+
+temp.plot(kind="barh")
+plt.show()
